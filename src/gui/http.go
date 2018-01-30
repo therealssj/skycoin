@@ -44,7 +44,7 @@ func create(host, staticDir string, daemon *daemon.Daemon) (*Server, error) {
 	logger.Info("Web resources directory: %s", appLoc)
 
 	return &Server{
-		mux:  NewServerMux(host, appLoc, daemon.Gateway),
+		mux:  NewServerMux(host, appLoc, daemon.Gateway, daemon.Gateway.Config.DisableCSRF),
 		done: make(chan struct{}),
 	}, nil
 }
@@ -114,7 +114,7 @@ func (s *Server) Shutdown() {
 }
 
 // NewServerMux creates an http.ServeMux with handlers registered
-func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
+func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	webHandler := func(endpoint string, handler http.Handler) {
@@ -130,6 +130,13 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 			route = route + "/"
 		}
 		webHandler(route, http.FileServer(http.Dir(appLoc)))
+	}
+
+	var CSRF = new(CSRFStore)
+	// is CSRF enabled
+	CSRF.enabled = !disableCSRF
+	if CSRF.enabled {
+		CSRF.getCSRFStore()
 	}
 
 	webHandler("/version", versionHandler(gateway))
@@ -155,9 +162,9 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 	//     seed: wallet seed [required]
 	//     label: wallet label [required]
 	//     scan: the number of addresses to scan ahead for balances [optional, must be > 0]
-	webHandler("/wallet/create", walletCreate(gateway))
+	webHandler("/wallet/create", CSRFCheck(walletCreate(gateway), CSRF))
 
-	webHandler("/wallet/newAddress", walletNewAddresses(gateway))
+	webHandler("/wallet/newAddress", CSRFCheck(walletNewAddresses(gateway), CSRF))
 
 	// Returns the confirmed and predicted balance for a specific wallet.
 	// The predicted balance is the confirmed balance minus any pending
@@ -174,7 +181,7 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 	//  fee: Number of hours to use as fee, on top of the default fee.
 	//  Returns total amount spent if successful, otherwise error describing
 	//  failure status.
-	webHandler("/wallet/spend", walletSpendHandler(gateway))
+	webHandler("/wallet/spend", CSRFCheck(walletSpendHandler(gateway), CSRF))
 
 	// GET Arguments:
 	//      id: Wallet ID
@@ -188,12 +195,13 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 	webHandler("/wallet/update", walletUpdateHandler(gateway))
 
 	// Returns all loaded wallets
-	webHandler("/wallets", walletsHandler(gateway))
+	// returns sensitive information
+	webHandler("/wallets", CSRFCheck(walletsHandler(gateway), CSRF))
 
 	webHandler("/wallets/folderName", getWalletFolder(gateway))
 
 	// generate wallet seed
-	webHandler("/wallet/newSeed", newWalletSeed(gateway))
+	webHandler("/wallet/newSeed", CSRFCheck(newWalletSeed(gateway), CSRF))
 
 	// Blockchain interface
 
@@ -231,7 +239,7 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 	//     confirmed: Whether the transactions should be confirmed [optional, must be 0 or 1; if not provided, returns all]
 	webHandler("/transactions", getTransactions(gateway))
 	//inject a transaction into network
-	webHandler("/injectTransaction", injectTransaction(gateway))
+	webHandler("/injectTransaction", CSRFCheck(injectTransaction(gateway), CSRF))
 	webHandler("/resendUnconfirmedTxns", resendUnconfirmedTxns(gateway))
 	// get raw tx by txid.
 	webHandler("/rawtx", getRawTx(gateway))
@@ -242,6 +250,9 @@ func NewServerMux(host, appLoc string, gateway Gatewayer) *http.ServeMux {
 	webHandler("/uxout", getUxOutByID(gateway))
 	// get all the address affected uxouts.
 	webHandler("/address_uxouts", getAddrUxOuts(gateway))
+
+	// get the current CSRF token
+	webHandler("/csrf", getCSRFToken(gateway, CSRF))
 
 	// Explorer handler
 
