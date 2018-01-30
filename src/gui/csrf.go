@@ -31,7 +31,8 @@ type CSRFToken struct {
 }
 
 type CSRFStore struct {
-	token *CSRFToken
+	token   *CSRFToken
+	enabled bool
 	sync.Mutex
 	once sync.Once
 }
@@ -90,7 +91,7 @@ func (c *CSRFStore) getCSRFStore() *CSRFStore {
 // url: /csrf
 func getCSRFToken(gateway Gatewayer, store *CSRFStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
+		if r.Method != http.MethodGet || !store.enabled {
 			wh.Error405(w)
 			return
 		}
@@ -107,9 +108,9 @@ func getCSRFToken(gateway Gatewayer, store *CSRFStore) http.HandlerFunc {
 }
 
 // CSRFCheck verifies X-CSRF-Token header value
-func CSRFCheck(handler http.Handler, disabled bool, store *CSRFStore) http.Handler {
+func CSRFCheck(handler http.Handler, store *CSRFStore) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !disabled {
+		if store.enabled {
 			token := r.Header.Get(HeaderName)
 			if !store.verifyToken(token) {
 				wh.Error403Msg(w, "invalid CSRF token")
