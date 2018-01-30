@@ -132,8 +132,10 @@ func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *htt
 		webHandler(route, http.FileServer(http.Dir(appLoc)))
 	}
 
-	var CSRF= new(CSRFStore)
-	if !disableCSRF {
+	var CSRF = new(CSRFStore)
+	// is CSRF enabled
+	CSRF.enabled = !disableCSRF
+	if CSRF.enabled {
 		CSRF.getCSRFStore()
 	}
 
@@ -160,9 +162,9 @@ func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *htt
 	//     seed: wallet seed [required]
 	//     label: wallet label [required]
 	//     scan: the number of addresses to scan ahead for balances [optional, must be > 0]
-	webHandler("/wallet/create", CSRFCheck(walletCreate(gateway), disableCSRF, CSRF))
+	webHandler("/wallet/create", CSRFCheck(walletCreate(gateway), CSRF))
 
-	webHandler("/wallet/newAddress", CSRFCheck(walletNewAddresses(gateway), disableCSRF, CSRF))
+	webHandler("/wallet/newAddress", CSRFCheck(walletNewAddresses(gateway), CSRF))
 
 	// Returns the confirmed and predicted balance for a specific wallet.
 	// The predicted balance is the confirmed balance minus any pending
@@ -179,7 +181,7 @@ func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *htt
 	//  fee: Number of hours to use as fee, on top of the default fee.
 	//  Returns total amount spent if successful, otherwise error describing
 	//  failure status.
-	webHandler("/wallet/spend", CSRFCheck(walletSpendHandler(gateway), disableCSRF, CSRF))
+	webHandler("/wallet/spend", CSRFCheck(walletSpendHandler(gateway), CSRF))
 
 	// GET Arguments:
 	//      id: Wallet ID
@@ -194,12 +196,12 @@ func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *htt
 
 	// Returns all loaded wallets
 	// returns sensitive information
-	webHandler("/wallets", CSRFCheck(walletsHandler(gateway), disableCSRF, CSRF))
+	webHandler("/wallets", CSRFCheck(walletsHandler(gateway), CSRF))
 
 	webHandler("/wallets/folderName", getWalletFolder(gateway))
 
 	// generate wallet seed
-	webHandler("/wallet/newSeed", CSRFCheck(newWalletSeed(gateway), disableCSRF, CSRF))
+	webHandler("/wallet/newSeed", CSRFCheck(newWalletSeed(gateway), CSRF))
 
 	// Blockchain interface
 
@@ -237,7 +239,7 @@ func NewServerMux(host, appLoc string, gateway Gatewayer, disableCSRF bool) *htt
 	//     confirmed: Whether the transactions should be confirmed [optional, must be 0 or 1; if not provided, returns all]
 	webHandler("/transactions", getTransactions(gateway))
 	//inject a transaction into network
-	webHandler("/injectTransaction", CSRFCheck(injectTransaction(gateway), disableCSRF, CSRF))
+	webHandler("/injectTransaction", CSRFCheck(injectTransaction(gateway), CSRF))
 	webHandler("/resendUnconfirmedTxns", resendUnconfirmedTxns(gateway))
 	// get raw tx by txid.
 	webHandler("/rawtx", getRawTx(gateway))
