@@ -78,8 +78,6 @@ var (
 	}
 )
 
-// Command line interface arguments
-
 // Config records the node's configuration
 type Config struct {
 	// Disable peer exchange
@@ -358,6 +356,11 @@ func (c *Config) postProcess() {
 
 	if c.DBPath == "" {
 		c.DBPath = filepath.Join(c.DataDirectory, "data.db")
+	}
+
+	if c.RunMaster {
+		// Run in arbitrating mode if the node is master
+		c.Arbitrating = true
 	}
 }
 
@@ -696,7 +699,7 @@ func Run(c *Config) {
 	   time.Sleep(5)
 	   tx := InitTransaction()
 	   _ = tx
-	   err, _ = d.Visor.Visor.InjectTxn(tx)
+	   err, _ = d.Visor.Visor.InjectTransaction(tx)
 	   if err != nil {
 	       log.Panic(err)
 	   }
@@ -709,7 +712,7 @@ func Run(c *Config) {
 	           for d.Visor.Visor.Blockchain.Head().Seq() < 2 {
 	               time.Sleep(5)
 	               tx := InitTransaction()
-	               err, _ := d.Visor.Visor.InjectTxn(tx)
+	               err, _ := d.Visor.Visor.InjectTransaction(tx)
 	               if err != nil {
 	                   //log.Panic(err)
 	               }
