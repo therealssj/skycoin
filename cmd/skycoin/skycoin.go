@@ -423,9 +423,9 @@ func createGUI(c *Config, d *daemon.Daemon, host string, quit chan struct{}) (*g
 			return nil, err
 		}
 
-		s, err = gui.CreateHTTPS(host, c.GUIDirectory, d, c.WebInterfaceCert, c.WebInterfaceKey)
+		s, err = gui.CreateHTTPS(host, c.GUIDirectory, d, c.WebInterfaceCert, c.WebInterfaceKey, c.DisableCSRF)
 	} else {
-		s, err = gui.Create(host, c.GUIDirectory, d)
+		s, err = gui.Create(host, c.GUIDirectory, d, c.DisableCSRF)
 	}
 	if err != nil {
 		logger.Error("Failed to start web GUI: %v", err)
