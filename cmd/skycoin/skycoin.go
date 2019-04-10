@@ -32,8 +32,14 @@ var (
 
 	logger = logging.MustGetLogger("main")
 
+	// DisplayName user-facing name
+	DisplayName = "Skycoin"
 	// CoinName name of coin
 	CoinName = "skycoin"
+	// CoinhoursName name of coinhours
+	CoinhoursName = "Coin Hours"
+	// Ticker short name
+	Ticker = "SKY"
 
 	// GenesisSignatureStr hex string of genesis signature
 	GenesisSignatureStr = "eb10468d10054d15f2b6f8946cd46797779aa20a7617ceb4be884189f219bc9a164e56a5b9f7bec392a804ff3740210348d73db77a37adb542a8e08d429ac92700"
@@ -64,7 +70,11 @@ var (
 	}
 
 	nodeConfig = skycoin.NewNodeConfig(ConfigMode, skycoin.NodeParameters{
+		DisplayName:                    DisplayName,
 		CoinName:                       CoinName,
+		CoinhoursName:                  CoinhoursName,
+		Ticker:                         Ticker,
+		ExplorerURL:                    "https://explorer.skycoin.net",
 		GenesisSignatureStr:            GenesisSignatureStr,
 		GenesisAddressStr:              GenesisAddressStr,
 		GenesisCoinVolume:              GenesisCoinVolume,

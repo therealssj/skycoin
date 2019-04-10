@@ -35,8 +35,16 @@ type Config struct {
 
 // NodeConfig records the node's configuration
 type NodeConfig struct {
+	// DisplayName user-facing name
+	DisplayName string
 	// Name of the coin
 	CoinName string
+	// Coinhours name
+	CoinhoursName string
+	// Ticker code
+	Ticker string
+	// Block explorer URL
+	ExplorerURL string
 
 	// Disable peer exchange
 	DisablePEX bool
@@ -206,7 +214,11 @@ type NodeConfig struct {
 // NewNodeConfig returns a new node config instance
 func NewNodeConfig(mode string, node NodeParameters) NodeConfig {
 	nodeConfig := NodeConfig{
+		DisplayName:         node.DisplayName,
 		CoinName:            node.CoinName,
+		CoinhoursName:       node.CoinhoursName,
+		Ticker:              node.Ticker,
+		ExplorerURL:         node.ExplorerURL,
 		GenesisSignatureStr: node.GenesisSignatureStr,
 		GenesisAddressStr:   node.GenesisAddressStr,
 		GenesisCoinVolume:   node.GenesisCoinVolume,
@@ -601,6 +613,11 @@ func (c *NodeConfig) RegisterFlags() {
 	flag.StringVar(&c.WebInterfaceKey, "web-interface-key", c.WebInterfaceKey, "skycoind.key file for web interface HTTPS. If not provided, will autogenerate or use skycoind.key in -data-directory")
 	flag.BoolVar(&c.WebInterfaceHTTPS, "web-interface-https", c.WebInterfaceHTTPS, "enable HTTPS for web interface")
 	flag.StringVar(&c.HostWhitelist, "host-whitelist", c.HostWhitelist, "Hostnames to whitelist in the Host header check. Only applies when the web interface is bound to localhost.")
+
+	flag.StringVar(&c.DisplayName, "display-name", "Skycoin", "user-facing coin name")
+	flag.StringVar(&c.CoinhoursName, "coinhours-name", "Coin Hours", "name of coinhours")
+	flag.StringVar(&c.Ticker, "ticker", "SKY", "3/4 letter short name of the coin")
+	flag.StringVar(&c.ExplorerURL, "explorer-url", "https://explorer.skycoin.net", "url of the block explorer")
 
 	allAPISets := []string{
 		api.EndpointsRead,

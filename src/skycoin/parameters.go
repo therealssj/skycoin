@@ -51,6 +51,14 @@ type NodeParameters struct {
 	CreateBlockMaxDropletPrecision uint8 `mapstructure:"create_block_max_decimals"`
 	// MaxBlockTransactionsSize is the maximum total size of transactions in a block when publishing a block
 	MaxBlockTransactionsSize int `mapstructure:"max_block_transactions_size"`
+	// DisplayName is the user-facing name of the coin
+	DisplayName string `mapstructure:"display_name"`
+	// CoinhoursName is the name of coin's hours
+	CoinhoursName string `mapstructure:"coinhours_name"`
+	// Ticker is the 3/4 letter code of the coin
+	Ticker string `mapstructure:"ticker"`
+	// ExplorerURL is the URL of the block explorer
+	ExplorerURL string `mapstructure:"explorer_url"`
 
 	// These fields are set by cmd/newcoin and are not configured in the fiber.toml file
 	CoinName      string
@@ -148,4 +156,9 @@ func setDefaults() {
 	viper.SetDefault("params.user_max_decimals", 3)
 	viper.SetDefault("params.user_burn_factor", 2)
 	viper.SetDefault("params.user_max_transaction_size", 32*1024)
+
+	viper.SetDefault("node.display_name", "Skycoin")
+	viper.SetDefault("node.coinhours_name", "Coin Hours")
+	viper.SetDefault("node.ticker", "SKY")
+	viper.SetDefault("node.explorer_url", "https://explorer.skycoin.net")
 }

@@ -36,6 +36,10 @@ func TestNewParameters(t *testing.T) {
 			CreateBlockMaxTransactionSize:  1234,
 			CreateBlockMaxDropletPrecision: 4,
 			MaxBlockTransactionsSize:       1111,
+			DisplayName:                    "Skycoin",
+			CoinhoursName:                  "Coin Hours",
+			Ticker:                         "SKY",
+			ExplorerURL:                    "https://explorer.skycoin.net",
 		},
 		Params: ParamsParameters{
 			MaxCoinSupply:              1e8,
