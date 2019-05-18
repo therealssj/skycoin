@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Return v2-style error for disabled endpoints
 - #2172 Fix electron build failure for linux system
 - Don't send messages that exceed the configured 256kB limit, which caused peers to disconnect from the sender
+- Fix zsh autocomplete
 
 ### Changed
 
